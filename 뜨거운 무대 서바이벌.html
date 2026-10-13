@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>뜨거운 무대 서바이벌</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#101018;--fg:#f5f0f2;--card:#1d1d2a;--t1:#2b2b3c;--t2:#252534;--line:#3a3a52;--pink:#ed1b76;--teal:#13b5a3}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:"Pretendard","Noto Sans KR",system-ui,sans-serif}
+#app{max-width:720px;margin:0 auto;padding:16px;text-align:center}
+h1{font-size:1.45rem;margin:8px 0 4px;letter-spacing:.02em}h1 b{color:var(--pink)}
+p.sub{margin:0 0 14px;opacity:.75}
+.shapes{font-size:1.5rem;letter-spacing:.4em;color:var(--pink)}
+.chars{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:420px;margin:0 auto 16px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px}
+.card .em{font-size:3.2rem;line-height:1.1}.card .no{font-size:.75rem;color:var(--teal);font-weight:700;letter-spacing:.1em}
+input{width:100%;font:inherit;padding:8px 10px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--fg);text-align:center;margin-top:6px}
+button{font:inherit;font-weight:700;background:var(--pink);color:#fff;border:0;border-radius:10px;padding:12px 26px;cursor:pointer;margin:6px}
+button.ghost{background:var(--line)}button:disabled{opacity:.4;cursor:default}
+.board{--c:min(5.2vw,32px);display:grid;grid-template-columns:repeat(16,var(--c));grid-auto-rows:var(--c);gap:1px;justify-content:center;margin:10px auto;touch-action:none;user-select:none;padding:6px;border:3px solid var(--teal);border-radius:8px;width:fit-content}
+.tile{background:var(--t1);position:relative;display:flex;align-items:center;justify-content:center;transition:background .3s}
+.tile:nth-child(even){background:var(--t2)}
+.tile.fire{background:#ff6b1a;animation:fl .35s infinite alternate}
+.tile.src::after{content:"🔥";font-size:calc(var(--c)*.7)}
+.tile.ash{background:#5a1f10}
+.tile.glow{animation:glow .5s infinite alternate;z-index:3}
+.tile.glow::before{content:"여기!";position:absolute;bottom:105%;left:50%;transform:translateX(-50%);background:#ffe600;color:#c00;font-weight:900;font-size:.8rem;padding:1px 6px;border-radius:6px;white-space:nowrap;animation:bob .4s infinite alternate}
+@keyframes glow{from{background:#ffe600;box-shadow:0 0 6px 2px #ffe600}to{background:#ff2b2b;box-shadow:0 0 22px 10px #ff2b2b}}
+@keyframes bob{to{transform:translate(-50%,-4px)}}
+@keyframes fl{to{background:#ffc13b;transform:scale(1.06)}}
+.piece{font-size:calc(var(--c)*.78);line-height:1;cursor:grab;touch-action:none;position:relative;z-index:2}
+.piece small{position:absolute;top:100%;left:50%;transform:translateX(-50%);font-size:.38em;white-space:nowrap;background:var(--card);border-radius:4px;padding:0 3px;margin-top:-2px}
+.piece.dead{animation:fall 1s forwards;pointer-events:none}
+.piece.win{animation:win .6s infinite alternate}
+@keyframes fall{30%{transform:scale(1.3) rotate(20deg)}to{transform:scale(0) rotate(200deg) translateY(30px);opacity:0}}
+@keyframes win{to{transform:scale(1.25)}}
+.tray{display:flex;gap:14px;justify-content:center;min-height:70px;align-items:center;flex-wrap:wrap}
+.tray .piece{font-size:2.4rem;display:flex;flex-direction:column;align-items:center}
+.tray .piece small{position:static;transform:none;font-size:.75rem;margin:2px 0 0}
+.ghost-p{position:fixed;pointer-events:none;z-index:99;font-size:2.4rem;transform:translate(-50%,-50%)}
+.alarm{background:#c1121f;color:#fff;border-radius:12px;padding:10px;margin:8px 0;font-weight:900;animation:blink .45s infinite alternate}
+.alarm .l1{font-size:1.5rem}.alarm .l2{font-size:1.1rem}
+@keyframes blink{from{background:#c1121f}to{background:#ff6a00}}
+body.alarm-on #app{animation:shake .12s infinite}
+body.alarm-on::after{content:"";position:fixed;inset:0;pointer-events:none;box-shadow:inset 0 0 90px 30px rgba(255,0,0,.55);animation:blink2 .45s infinite alternate}
+@keyframes blink2{to{opacity:.25}}
+@keyframes shake{25%{transform:translate(2px,-1px)}75%{transform:translate(-2px,1px)}}
+.opts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:420px;margin:10px auto}
+.opts button{background:var(--card);border:2px solid var(--line);font-size:1.1rem}
+.opts button.ok{background:var(--teal);border-color:var(--teal)}.opts button.no{background:#b0182b;border-color:#b0182b}
+.out{min-height:1.6em;color:#ff8a8a;font-weight:700;margin:4px}
+.res{font-size:1.15rem;font-weight:700;margin:8px}
+.intro{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.intro>*{opacity:0;animation:in .8s forwards}
+.intro .big{font-size:2.6rem}.intro .t1{font-size:3rem;font-weight:900;color:var(--pink);text-shadow:0 0 18px var(--pink);animation-delay:.6s}
+.intro .t2{font-size:1.7rem;font-weight:800;animation-delay:1.6s}.intro .t2 em{font-style:normal;color:#ff9a3c;text-shadow:0 0 14px #ff6b1a}
+.intro .t3{font-size:2.6rem;font-weight:900;color:#fff;animation-delay:2.6s;text-shadow:0 0 22px #ff2b2b}
+.intro .t4{color:var(--teal);font-weight:700;animation-delay:3.4s}.intro button{animation-delay:3.8s;margin-top:14px}
+.intro .t3{animation-name:in,pulse;animation-duration:.8s,.7s;animation-delay:2.6s,3.4s;animation-iteration-count:1,infinite;animation-direction:normal,alternate}
+@keyframes in{from{opacity:0;transform:translateY(14px) scale(.9)}to{opacity:1;transform:none}}
+@keyframes pulse{to{transform:scale(1.08);text-shadow:0 0 34px #ff2b2b}}
+.rules{max-width:460px;margin:0 auto;text-align:left}
+.rules h1{text-align:center;margin-bottom:14px}
+.rule{display:flex;gap:12px;align-items:center;background:var(--card);border:2px solid var(--line);border-left:6px solid var(--pink);border-radius:12px;padding:12px 14px;margin:10px 0;font-size:1.05rem;font-weight:600;opacity:0;animation:in .6s forwards}
+.rule .n{flex:none;width:34px;height:34px;border-radius:50%;background:var(--pink);display:flex;align-items:center;justify-content:center;font-weight:900}
+.rule.r3{border-left-color:#ff6b1a}.rule.r3 .n{background:#ff6b1a}
+.rule.r4{border-left-color:var(--teal)}.rule.r4 .n{background:var(--teal)}
+.rules .ctr{text-align:center;margin-top:16px}
+.cand{width:92%;height:92%;border-radius:50%;background:var(--pink);color:#fff;font-weight:900;font-size:calc(var(--c)*.6);display:flex;align-items:center;justify-content:center;position:relative;z-index:2}
+.cand.me{outline:3px solid #ffe600}.cand.dead{animation:fall 1s forwards}.cand.win{animation:win .6s infinite alternate;background:var(--teal)}
+</style></head><body><div id="app"></div>
+<script>
+const EM=["🐶","🐱","🐰","🐻"],N=16,$=s=>document.querySelector(s);
+let names=["","","",""],pos=[null,null,null,null],timers=[];
+const app=$("#app"),esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nm=i=>names[i].trim()||("참가자"+(i+1));
+const clear=()=>{timers.forEach(clearTimeout);timers=[];document.body.classList.remove("alarm-on")};
+const later=(f,ms)=>timers.push(setTimeout(f,ms));
+
+function step1(){clear();
+ app.innerHTML=`<div class="shapes">○ △ □</div><h1>뜨거운 무대 <b>서바이벌</b></h1><p class="sub">바닥으로 열이 전도된다! 뜨거워진 바닥에서 내려가면 탈락.<br>참가자 4명의 이름을 입력하세요</p>
+ <div class="chars">${EM.map((e,i)=>`<div class="card"><div class="no">PLAYER 00${i+1}</div><div class="em">${e}</div><input data-i="${i}" maxlength="8" placeholder="이름" value="${esc(names[i])}"></div>`).join("")}</div>
+ <button id="n1">다음</button>`;
+ const chk=()=>$("#n1").disabled=names.some(n=>!n.trim());
+ app.querySelectorAll("input").forEach(el=>el.oninput=()=>{names[+el.dataset.i]=el.value;chk()});chk();
+ $("#n1").onclick=()=>{pos=[null,null,null,null];step2()};
+}
+const pieceHTML=i=>`<div class="piece" data-i="${i}">${EM[i]}<small>${esc(nm(i))}</small></div>`;
+const boardHTML=()=>`<div class="board">${Array.from({length:N*N},(_,t)=>`<div class="tile" data-t="${t}">${pos.includes(t)?pieceHTML(pos.indexOf(t)):""}</div>`).join("")}</div>`;
+
+function step2(){clear();
+ app.innerHTML=`<h1>무대 위에 서세요</h1><p class="sub">참가자를 끌어서 무대 위 원하는 칸에 세우세요 (옮기기 가능)</p>
+ <div class="tray">${pos.map((p,i)=>p===null?pieceHTML(i):"").join("")}</div>${boardHTML()}
+ <button class="ghost" id="b1">← 이름 고치기</button><button id="n2" ${pos.includes(null)?"disabled":""}>게임 시작</button>`;
+ $("#b1").onclick=step1;$("#n2").onclick=step3;
+ app.querySelectorAll(".piece").forEach(el=>el.onpointerdown=e=>drag(e,el));
+}
+function drag(e,el){e.preventDefault();const i=+el.dataset.i,g=document.createElement("div");
+ g.className="ghost-p";g.textContent=EM[i];document.body.appendChild(g);
+ const mv=ev=>{g.style.left=ev.clientX+"px";g.style.top=ev.clientY+"px"};mv(e);
+ const up=ev=>{removeEventListener("pointermove",mv);removeEventListener("pointerup",up);g.remove();
+  const t=document.elementFromPoint(ev.clientX,ev.clientY)?.closest(".tile");
+  if(t){const k=+t.dataset.t;if(!pos.includes(k)||pos[i]===k)pos[i]=k}
+  step2()};
+ addEventListener("pointermove",mv);addEventListener("pointerup",up)}
+
+function step3(){clear();
+ const md=(a,b)=>Math.abs((a/N|0)-(b/N|0))+Math.abs(a%N-b%N);
+ const empty=[...Array(N*N).keys()].filter(t=>!pos.includes(t));
+ const info=t=>{const d=pos.map(p=>md(t,p)),s=[...d].sort((a,b)=>b-a);return{d,uniq:s[0]>s[1]}};
+ let c=empty.filter(t=>info(t).uniq);if(!c.length)c=empty;
+ const fire=c[Math.random()*c.length|0],{d}=info(fire),ans=d.indexOf(Math.max(...d)),maxD=Math.max(...d);
+ app.innerHTML=`<h1>뜨거운 무대 <b>서바이벌</b></h1><div id="top"><p class="sub">잠시 후 무언가 일어납니다…</p></div>${boardHTML()}<div class="out" id="out"></div><div id="zone"></div>`;
+ const tiles=[...app.querySelectorAll(".tile")];
+ let lvl=0,phase=1,pick=-1;const gone=new Set();
+ // 긴급상황 연출
+ later(()=>{document.body.classList.add("alarm-on");tiles[fire].classList.add("glow");
+  $("#top").innerHTML=`<div class="alarm"><div class="l1">🚨 긴급 상황! 🚨</div><div class="l2">여기 아래쪽에 불이 붙었어요!</div></div>`},1200);
+ later(()=>{document.body.classList.remove("alarm-on");tiles[fire].classList.remove("glow");tiles[fire].classList.add("src");
+  $("#top").innerHTML=`<p class="sub">🌡️ 열이 점점 이동하고 있어요! 뜨거워진 바닥에서는 버틸 수 없어요</p>`;tick()},4600);
+ const mark=()=>{tiles.forEach((el,t)=>{const r=md(fire,t);if(r<lvl){el.classList.remove("fire");el.classList.add("ash")}else if(r===lvl)el.classList.add("fire")});
+  pos.forEach((p,i)=>{if(d[i]<=lvl&&!gone.has(i)){gone.add(i);tiles[p].querySelector(".piece")?.classList.add("dead");
+   $("#out").textContent="탈락: "+[...gone].map(k=>EM[k]+nm(k)).join(" · ")}})};
+ const tick=()=>{mark();
+  if(phase===1&&(gone.size>=2||lvl>=maxD-1))return ask();
+  if(lvl>=maxD-1)return end();
+  lvl++;later(tick,450)};
+ const ask=()=>{$("#top").innerHTML=`<p class="sub">⏸ 잠깐! 열의 이동이 잠시 멈췄어요</p>`;
+  $("#zone").innerHTML=`<h2>끝까지 무대에 남아 승리하는 사람은 누구일까?</h2><div class="opts">${pos.map((_,i)=>`<button data-i="${i}" ${gone.has(i)?"disabled":""}>${EM[i]} ${esc(nm(i))}${gone.has(i)?" ✖":""}</button>`).join("")}</div>`;
+  $("#zone").querySelectorAll("button:not([disabled])").forEach(b=>b.onclick=()=>{pick=+b.dataset.i;
+   $("#zone").querySelectorAll("button").forEach(x=>x.disabled=true);b.classList.add(pick===ans?"ok":"no");
+   $("#top").innerHTML=`<p class="sub">🌡️ 열이 계속 이동하고 있어요…</p>`;phase=2;
+   if(lvl>=maxD-1)later(end,700);else{lvl++;later(tick,700)}})};
+ const end=()=>{const win=pick===ans;
+  tiles[pos[ans]].querySelector(".piece")?.classList.add("win");
+  $("#top").innerHTML=`<p class="sub">게임 종료!</p>`;
+  $("#zone").querySelectorAll("button")[ans]?.classList.add("ok");
+  $("#zone").insertAdjacentHTML("beforeend",`<div class="res">${win?"🎉 정답! ":"😢 아쉬워요. "}🏆 마지막까지 무대에 남은 사람은 ${EM[ans]} ${esc(nm(ans))}!<br><small>(열이 처음 생긴 곳에서 가장 멀리 있었어요)<br>🔬 열이 이웃한 곳으로 차례로 이동하는 것을 '전도'라고 해요.</small></div><button id="again">같은 배치로 다시</button><button id="nx">다음 이야기 ▶</button><button class="ghost" id="re">말 다시 배치</button>`);
+  $("#again").onclick=step3;$("#nx").onclick=story2;$("#re").onclick=()=>{pos=[null,null,null,null];step2()}};
+}
+function intro(){clear();
+ app.innerHTML=`<div class="intro"><div class="shapes big">○ △ □</div><div class="t1">오징어게임</div><div class="t2">뜨거운 <em>열</em>로부터</div><div class="t3">살아남아라!</div><div class="t4">🌡️ 열의 전도 서바이벌</div><button id="go">게임 시작 ▶</button></div>`;
+ $("#go").onclick=rules;later(rules,7000)}
+function rules(){clear();
+ const R=["4명의 참가자는 경기장 중 원하는 곳에 서 있는다.","무대 한 장소 아래에서 화재가 발생합니다.","아래가 너무 뜨거워서 내려가면 탈락!","마지막까지 남는 사람이 승리합니다."];
+ app.innerHTML=`<div class="rules"><h1>📋 <b>규칙</b></h1>${R.map((t,i)=>`<div class="rule r${i+1}" style="animation-delay:${.3+i*.7}s"><span class="n">${i+1}</span><span>${t}</span></div>`).join("")}<div class="ctr"><button id="ok">알겠어요! 다음 ▶</button></div></div>`;
+ $("#ok").onclick=step1}
+function story2(){clear();
+ app.innerHTML=`<div class="rules"><h1>🚻 <b>엿들은 비밀</b></h1><div class="rule r3" style="animation-delay:.4s"><span class="n">1</span><span>심판이 화장실에서 불을 어디에 붙이는지 얘기하는 것을 들었다.</span></div><div class="ctr"><button id="ok">무대 확인하기 ▶</button></div></div>`;
+ $("#ok").onclick=quiz2}
+function quiz2(){clear();
+ const md=(a,b)=>Math.abs((a/N|0)-(b/N|0))+Math.abs(a%N-b%N),L="ABCD";
+ let fire,C,d;
+ const co=[0,N-1,N*(N-1),N*N-1];
+ do{fire=co[Math.random()*4|0];const fr=fire/N|0,fc=fire%N,sr=fr?-1:1,sc=fc?-1:1;
+  const ds=[];while(ds.length<4){const x=4+(Math.random()*25|0);if(ds.every(y=>Math.abs(y-x)>=5))ds.push(x)}
+  ds.sort(()=>Math.random()-.5);
+  C=ds.map(x=>{const lo=Math.max(0,x-15),hi=Math.min(15,x),dr=lo+(Math.random()*(hi-lo+1)|0);return (fr+sr*dr)*N+fc+sc*(x-dr)});
+  d=C.map(t=>md(fire,t))}while(C.some((a,i)=>C.some((b,j)=>j>i&&Math.max(Math.abs((a/N|0)-(b/N|0)),Math.abs(a%N-b%N))<3)));
+ const ans=d.indexOf(Math.max(...d)),maxD=d[ans];
+ app.innerHTML=`<h1>🚻 <b>엿들은 비밀</b></h1><p class="sub" id="sub">🔥 표시된 타일 아래에 불이 붙는다고 했다!</p><div class="board">${Array.from({length:N*N},(_,t)=>`<div class="tile${t===fire?" src glow":""}">${C.includes(t)?`<div class="cand">${L[C.indexOf(t)]}</div>`:""}</div>`).join("")}</div><div class="out" id="out"></div><div id="zone"><h2>2. 그러면 타일 중 어느 위치에 서는 게 유리할까?</h2><div class="opts">${[0,1,2,3].map(i=>`<button data-i="${i}">${L[i]} 위치</button>`).join("")}</div></div>`;
+ const tiles=[...app.querySelectorAll(".tile")],cands=C.map(t=>tiles[t].querySelector(".cand"));
+ let lvl=0,pick=-1;const gone=[];
+ const mark=()=>{tiles.forEach((el,t)=>{const r=md(fire,t);if(r<lvl){el.classList.remove("fire");el.classList.add("ash")}else if(r===lvl)el.classList.add("fire")});
+  d.forEach((x,i)=>{if(x<=lvl&&!gone.includes(i)){gone.push(i);cands[i].classList.add("dead");$("#out").textContent="탈락: "+gone.map(k=>L[k]).join(" · ")}})};
+ const tick=()=>{mark();if(lvl>=maxD-1)return end();lvl++;later(tick,380)};
+ const end=()=>{const win=pick===ans;cands[ans].classList.add("win");
+  $("#sub").textContent="열의 이동이 끝났어요!";
+  $("#zone").innerHTML=`<div class="res">${win?"🎉 정답! ":"😢 아쉬워요. "}가장 유리한 곳은 ${L[ans]} 위치예요!<br><small>불이 난 곳에서의 거리: ${d.map((x,i)=>`${L[i]} ${x}칸`).join(" · ")}<br>🔬 열은 가까운 곳부터 차례로 전도돼서, 가장 먼 곳이 가장 늦게 뜨거워져요.</small></div><button id="again2">새 문제</button><button class="ghost" id="home">처음으로</button>`;
+  $("#again2").onclick=quiz2;$("#home").onclick=intro};
+ $("#zone").querySelectorAll("button").forEach(b=>b.onclick=()=>{pick=+b.dataset.i;
+  $("#zone").querySelectorAll("button").forEach(x=>x.disabled=true);b.classList.add(pick===ans?"ok":"no");
+  cands[pick].classList.add("me");$("#sub").textContent="🌡️ 열이 점점 이동하고 있어요…";
+  tiles.forEach(el=>el.classList.remove("glow"));later(tick,700)});
+}
+intro();
+</script></body></html>
